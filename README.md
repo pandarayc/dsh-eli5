@@ -1,5 +1,7 @@
 # dsh-eli5 — 讲人话
 
+![讲人话浮层：选中 RetryPolicy，面板先显示「看了这些」的读取轨迹，再用大白话解释](docs/panel.png)
+
 在 DSH 的 Web 界面里选中看不懂的词、句子、代码或报错，点浮出来的「讲人话」，右侧浮层用**最直白、最不绕弯子**的话说明白它是什么；不懂可以接着追问。需要看代码才能说清时，它会**只读**地翻一下会话所在的工作区，并在浮层里留下「看了这些」。
 
 名字取 Explain Like I'm 5：不是把人当小孩，而是要求**第一行就是大白话**——「这东西就是……」，不先抛术语；术语必须出现时当场翻译。它不猜、不堆黑话、不复述问题。
@@ -118,6 +120,7 @@ flowchart TD
 ## 安装（web profile）
 
 ```sh
+# 0) 从 npm 装（发布后）： dsh plugin --profile web add dsh-eli5
 # 1) 让 profile 能解析到包
 ln -sfn ~/.dsh/plugins/dsh-eli5 ~/.dsh/profiles/web/node_modules/dsh-eli5
 

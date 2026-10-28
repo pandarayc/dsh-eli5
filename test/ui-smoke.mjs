@@ -126,6 +126,22 @@ async function main() {
   console.log('--- trace ---\n' + trace.slice(0, 300));
   await shot('shot-trace.png');
 
+  // A 2x crop of just the panel — the image a README wants — once the answer
+  // is actually there (the trace appears while the model is still thinking).
+  await waitFor(
+    '(() => { const el = document.querySelector("#dsh-eli5-panel .xp-answer"); return el && el.innerText.trim().length > 80 && !document.querySelector("#dsh-eli5-panel .xp-send").disabled; })()',
+    90_000,
+    'trace answer',
+  );
+  await evaluate('(() => { const b = document.querySelector("#dsh-eli5-panel .xp-body"); if (b) b.scrollTop = 0; })()');
+  await sleep(400);
+  const rect = await evaluate(
+    `(() => { const r = document.querySelector('#dsh-eli5-panel').getBoundingClientRect(); return { x: Math.floor(r.x), y: Math.floor(r.y), width: Math.ceil(r.width), height: Math.ceil(r.height) }; })()`,
+  );
+  const cropped = await cdp.send('Page.captureScreenshot', { format: 'png', clip: { ...rect, scale: 2 } });
+  await (await import('node:fs/promises')).writeFile(`${shotDir}/shot-panel.png`, Buffer.from(cropped.data, 'base64'));
+  console.log('panel crop:', `${shotDir}/shot-panel.png`);
+
   const actions = await evaluate('document.querySelectorAll("#dsh-eli5-panel .xp-actions button").length');
   console.log('quick actions:', actions);
   if (actions > 0) {

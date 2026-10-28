@@ -93,8 +93,8 @@ async function main() {
 
   // A model asked to explain does not always choose to draw; ask for the
   // diagram explicitly and retry a couple of times before calling it a failure.
-  const question = '用一个流程图说明重试的退避过程';
-  const context = '我们在看 internal/worker/retry.go 里 RetryPolicy 的退避';
+  const question = process.env.DIAGRAM_QUESTION ?? '用一个流程图说明重试的退避过程';
+  const context = process.env.DIAGRAM_CONTEXT ?? '我们在看 internal/worker/retry.go 里 RetryPolicy 的退避';
   let diagram = '';
   for (let attempt = 1; attempt <= 3 && diagram === ''; attempt += 1) {
     if (attempt > 1) {
@@ -125,6 +125,17 @@ async function main() {
   await (await import('node:fs/promises')).mkdir(SHOT_DIR, { recursive: true });
   await (await import('node:fs/promises')).writeFile(`${SHOT_DIR}/shot-diagram.png`, Buffer.from(data, 'base64'));
   console.log('screenshot:', `${SHOT_DIR}/shot-diagram.png`);
+
+  // A cropped, 2x capture of just the panel — the image a README wants.
+  const rect = await evaluate(
+    `(() => { const r = document.querySelector('#dsh-eli5-panel').getBoundingClientRect(); return { x: Math.floor(r.x), y: Math.floor(r.y), width: Math.ceil(r.width), height: Math.ceil(r.height) }; })()`,
+  );
+  const cropped = await cdp.send('Page.captureScreenshot', {
+    format: 'png',
+    clip: { ...rect, scale: 2 },
+  });
+  await (await import('node:fs/promises')).writeFile(`${SHOT_DIR}/shot-panel.png`, Buffer.from(cropped.data, 'base64'));
+  console.log('panel crop:', `${SHOT_DIR}/shot-panel.png`);
 
   const problems = [];
   for (const event of cdp.events) {

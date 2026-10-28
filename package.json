@@ -1,8 +1,8 @@
 {
   "name": "dsh-eli5",
   "version": "0.4.0",
-  "private": true,
   "description": "讲人话（dsh-eli5）：在 DSH 里选中不懂的词、句子或输出，用最直白的独立模型查询说明白它是什么，必要时只读工作区，不写入主对话上下文。",
+  "license": "MIT",
   "type": "module",
   "main": "lib/index.js",
   "exports": {
@@ -13,26 +13,11 @@
   },
   "files": [
     "lib",
+    "docs",
     "cordis.patch.yml",
     "README.md",
-    "test"
+    "LICENSE"
   ],
-  "dsh": {
-    "manifestVersion": 1,
-    "bundle": {
-      "patch": "./cordis.patch.yml"
-    },
-    "client": {
-      "platform": "web"
-    }
-  },
-  "engines": {
-    "node": ">=20"
-  },
-  "license": "MIT",
-  "scripts": {
-    "test": "node --test test/*.test.mjs"
-  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/pandarayc/dsh-eli5.git"
@@ -44,9 +29,27 @@
   "keywords": [
     "dsh",
     "dsh-plugin",
+    "deepseek-harness",
     "explain",
     "eli5",
     "mermaid",
     "reading"
-  ]
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web"
+    }
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "test": "node --test test/*.test.mjs"
+  }
 }
