@@ -63,6 +63,11 @@ function fakeCtx(llm, { cwd, sessionId = 'session-test' } = {}) {
       return undefined;
     },
     logger: { info() {} },
+    // Mirrors the host's `ctx.timeout`: a disposer instead of a bare timer id.
+    timeout: (callback, delay) => {
+      const handle = setTimeout(callback, delay);
+      return () => clearTimeout(handle);
+    },
   };
 }
 
