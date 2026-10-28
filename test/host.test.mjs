@@ -431,13 +431,48 @@ test('tool markup is stripped even when it arrives split across deltas', () => {
   assert.equal(shown, '结论：没找到。（完）');
 
   const wide = new ToolMarkupFilter();
-  const wideShown = ['A', '<｜｜DSML｜｜>', 'x', '</｜｜DSML｜｜>', 'B'].map((part) => wide.push(part)).join('');
+  const wideShown = ['A', '<｜｜DSML｜｜>', 'invoke name="x"', '</｜｜DSML｜｜>', 'B'].map((part) => wide.push(part)).join('');
   assert.equal(wideShown, 'AB');
+
+  const hint = new ToolMarkupFilter();
+  assert.equal(hint.push('A<|DSML|>tool_calls>'), 'A');
+  assert.equal(hint.push('<|DSML|>invoke name="read_file">'), '');
+  assert.equal(hint.push('</|DSML|>B'), 'B');
+});
+
+test('a sentence that merely mentions the markup keeps its words', () => {
+  const filter = new ToolMarkupFilter();
+  assert.equal(filter.push('它会把 `<|DSML|>` 这样的标记去掉'), '它会把 `<|DSML|>` 这样的标记去掉');
+
+  // A marker split across deltas, followed by prose: the text is not swallowed.
+  const split = new ToolMarkupFilter();
+  const shown = ['标记 ', '<|', 'DSM', 'L|>', '就是', '这个'].map((part) => split.push(part)).join('');
+  assert.equal(shown, '标记 <|DSML|>就是这个');
+
+  // A marker at the very end of the turn is prose too, not a half tool call.
+  const tail = new ToolMarkupFilter();
+  assert.equal(tail.push('例子：'), '例子：');
+  assert.equal(tail.push('<|DSML|>'), '');
+  assert.equal(tail.flush(), '<|DSML|>');
 
   const plain = new ToolMarkupFilter();
   assert.equal(plain.push('普通 < 符号与 | 竖线'), '普通 < 符号与 | 竖线');
+});
 
-  const open = new ToolMarkupFilter();
-  assert.equal(open.push('答案<|DSML|>未闭合'), '答案');
-  open.flush();
+test('a truncated answer is reported and never cached', async () => {
+  const llm = fakeLlm([
+    [
+      { type: 'text-delta', index: 0, text: '这东西就是' },
+      { type: 'finish', reason: { kind: 'max-tokens' } },
+    ],
+  ]);
+  const service = new Eli5Service(fakeCtx(llm), CONFIG);
+  const request = { text: 'a', question: '', context: '', history: [], sessionId: '' };
+  const events = await collect(service, request);
+  assert.equal(textOf(events), '这东西就是');
+  const notice = events.find((event) => event.kind === 'notice');
+  assert.match(notice.text, /长度上限/);
+
+  const again = await collect(service, request);
+  assert.equal(again[0].cached, false);
 });

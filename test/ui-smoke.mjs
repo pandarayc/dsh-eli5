@@ -115,6 +115,21 @@ async function main() {
   console.log('--- answer 1 (first 120 chars) ---\n' + firstAnswer.slice(0, 120));
   await shot('shot-panel.png');
 
+  // 1c) A running explanation can be stopped, and the panel says so.
+  await evaluate(`window.__dshEli5.open('什么是幂等', '')`);
+  await waitFor(
+    '(() => { const b = document.querySelector("#dsh-eli5-panel .xp-stop"); return b !== null && !b.hidden; })()',
+    10_000,
+    'stop button',
+  );
+  await evaluate('document.querySelector("#dsh-eli5-panel .xp-stop").click()');
+  const stopped = await waitFor(
+    '(() => { const n = document.querySelector("#dsh-eli5-panel .xp-notice"); return n && !n.hidden ? n.textContent : ""; })()',
+    8_000,
+    'stop notice',
+  );
+  console.log('stop notice:', stopped);
+
   // 2) Follow-up through the quick action row (panel history must be included).
   // 1b) A question that needs the code: the reading trace must show up.
   await evaluate(`window.__dshEli5.open('RetryPolicy 是什么', '我们在给后台任务加重试，代码在 internal/worker/retry.go')`);
