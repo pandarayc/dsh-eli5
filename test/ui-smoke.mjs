@@ -206,7 +206,7 @@ async function main() {
     await shot('shot-chip.png');
     await evaluate('document.getElementById("dsh-eli5-chip").click()');
     const quote = await waitFor(
-      '(() => { const el = document.querySelector("#dsh-eli5-panel .xp-quote"); return el && el.textContent.trim().length > 0 ? el.textContent.trim() : ""; })()',
+      '(() => { const el = document.querySelector("#dsh-eli5-panel .xp-quote-text"); return el && el.textContent.trim().length > 0 ? el.textContent.trim() : ""; })()',
       5_000,
       'panel quote',
     );
@@ -218,6 +218,32 @@ async function main() {
     );
     console.log('--- answer 2 (first 120 chars) ---\n' + secondAnswer.slice(0, 120));
     await shot('shot-selection.png');
+
+    // 3b) The citation card names its source, and merging hands the answer back
+    // to the composer as a draft (or says why it could not).
+    const cite = await evaluate('document.querySelector("#dsh-eli5-panel .xp-cite").textContent');
+    console.log('cite label:', cite);
+    const mergeEnabled = await waitFor(
+      '(() => { const b = document.querySelector("#dsh-eli5-panel .xp-merge"); return b && !b.disabled; })()',
+      10_000,
+      'merge enabled',
+    );
+    console.log('merge enabled:', mergeEnabled);
+    const before = await evaluate('(() => { const el = document.querySelector("[data-composer-input]"); return el ? el.innerText : ""; })()');
+    await evaluate('document.querySelector("#dsh-eli5-panel .xp-merge").click()');
+    const outcome = await waitFor(
+      `(() => {
+        const notice = document.querySelector('#dsh-eli5-panel .xp-notice');
+        const text = notice && !notice.hidden ? notice.textContent : '';
+        const composer = document.querySelector('[data-composer-input]');
+        const draft = composer ? composer.innerText : '';
+        return (text || draft !== ${JSON.stringify(before)}) ? JSON.stringify({ notice: text, grew: draft.length - ${before.length} }) : '';
+      })()`,
+      8_000,
+      'merge outcome',
+    );
+    console.log('merge outcome:', outcome);
+    await shot('shot-merge.png');
   }
 
   // 4) Report anything the page complained about.
