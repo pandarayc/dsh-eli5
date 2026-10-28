@@ -144,7 +144,20 @@ ln -sfn ~/.dsh/plugins/dsh-eli5 ~/.dsh/profiles/web/node_modules/dsh-eli5
         model: deepseek-flash
 ```
 
-**热更新的边界**：浏览器半边（`lib/client.js`）存盘后刷新页面即可；**宿主半边（其余 `lib/*.js`）是进程启动时 import 的，改动要重启 DSH 才生效**——只刷新页面不够。重启会结束正在进行的会话（会话记录本身不丢，重开后还在）。
+**热更新的边界**：浏览器半边（`lib/client.js`）和图表渲染器（`lib/mermaid-lite.js`）是每次请求读盘的，存盘后刷新页面即可。
+
+**宿主半边（`lib/index.js`、`service.js` 等）默认是进程启动时 import 的，改动要重启 DSH**——但 DSH 自带 [`@deepseek-ai/dsh-hmr`](https://www.npmjs.com/package/@deepseek-ai/dsh-hmr)，在 profile 的 `cordis.patch.yml` 里给它加一个监听根目录，存盘就会 reload 插件：
+
+```yaml
+- id: hmr
+  config:
+    root:
+      - /绝对路径/到/dsh-eli5        # 默认 root 是空的，只监听 profile 配置
+```
+
+代价要清楚：reload 会 dispose 再重新 apply 这个插件，**正在进行的解释会中断、进程内缓存清空**；存到一半的语法错误不会把插件弄挂——这次 reload 失败，旧版本继续服务，改好再存就换过去。这个改动本身要重启一次才生效，之后就不用再重启了。
+
+重启会结束正在进行的会话（会话记录本身不丢，重开后还在）。
 
 卸载：删掉 patch 里的 insert，删符号链接，重启。
 
