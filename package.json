@@ -1,0 +1,52 @@
+{
+  "name": "dsh-eli5",
+  "version": "0.4.0",
+  "private": true,
+  "description": "讲人话（dsh-eli5）：在 DSH 里选中不懂的词、句子或输出，用最直白的独立模型查询说明白它是什么，必要时只读工作区，不写入主对话上下文。",
+  "type": "module",
+  "main": "lib/index.js",
+  "exports": {
+    ".": "./lib/index.js",
+    "./client": "./lib/client.js",
+    "./cordis.patch.yml": "./cordis.patch.yml",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "lib",
+    "cordis.patch.yml",
+    "README.md",
+    "test"
+  ],
+  "dsh": {
+    "manifestVersion": 1,
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web"
+    }
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "license": "MIT",
+  "scripts": {
+    "test": "node --test test/*.test.mjs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pandarayc/dsh-eli5.git"
+  },
+  "homepage": "https://github.com/pandarayc/dsh-eli5#readme",
+  "bugs": {
+    "url": "https://github.com/pandarayc/dsh-eli5/issues"
+  },
+  "keywords": [
+    "dsh",
+    "dsh-plugin",
+    "explain",
+    "eli5",
+    "mermaid",
+    "reading"
+  ]
+}

@@ -1,0 +1,24 @@
+# dsh-eli5 bundle patch.
+#
+# 划词解释：浏览器选中文字 → 点「解释」→ 独立模型查询（必要时几轮只读工具调用）
+# → 结果只在浮层里显示。解释不进入任何 Session 的对话事件，所以主对话的轮次、
+# token、压缩都不受影响。
+#
+# 可调项：
+#   provider / model   解释用的路由；留空则自动挑（fancyhub 的小模型优先）
+#   maxOutputTokens    单次解释的输出上限（默认 1200）
+#   timeoutMs          单次解释的端到端超时（默认 90s）
+#   temperature        留空 = 用模型默认；术语解释一般不需要发散
+#   maxSelectedChars   允许选中的最大字数（默认 4000，超出直接拒绝）
+#   maxContextChars    「选中位置附近上文」的字数上限（默认 4000）
+#   enableTools        是否允许只读工作区（默认 true；关掉即退回纯辅助查询）
+#   maxToolRounds/maxToolCalls/maxToolBytes/maxToolMs   工具预算（3 / 6 / 200KB / 60s）
+- insert:
+    - id: eli5
+      name: dsh-eli5
+      config:
+        provider: fancyhub
+        model: deepseek-flash
+        maxOutputTokens: 1200
+        timeoutMs: 90000
+        enableTools: true
