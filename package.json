@@ -1,6 +1,6 @@
 {
   "name": "dsh-eli5",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "description": "讲人话（dsh-eli5）：在 DSH 里选中不懂的词、句子或输出，用最直白的独立模型查询说明白它是什么，必要时只读工作区，不写入主对话上下文。",
   "license": "MIT",
   "type": "module",

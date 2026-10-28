@@ -205,6 +205,22 @@ async function main() {
     console.log('chip visible:', chipShown);
     await shot('shot-chip.png');
     await evaluate('document.getElementById("dsh-eli5-chip").click()');
+    const wheelShown = await waitFor(
+      '(() => { const wheel = document.getElementById("dsh-eli5-wheel"); return wheel && !wheel.hidden; })()',
+      5_000,
+      'wheel visible',
+    );
+    console.log('wheel visible:', wheelShown);
+    const sectors = await evaluate('document.querySelectorAll("#dsh-eli5-wheel .xp-sector").length');
+    console.log('wheel sectors:', sectors);
+    await shot('shot-wheel.png');
+    await evaluate('document.querySelector("#dsh-eli5-wheel [data-action=explain]").dispatchEvent(new MouseEvent("click", { bubbles: true }))');
+    const panelTitle = await waitFor(
+      '(() => { const t = document.querySelector("#dsh-eli5-panel .xp-title"); return t ? t.textContent : ""; })()',
+      5_000,
+      'panel title',
+    );
+    console.log('panel title:', panelTitle);
     const quote = await waitFor(
       '(() => { const el = document.querySelector("#dsh-eli5-panel .xp-quote-text"); return el && el.textContent.trim().length > 0 ? el.textContent.trim() : ""; })()',
       5_000,

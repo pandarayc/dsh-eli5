@@ -143,6 +143,22 @@ test('readRequest trims, clips and drops malformed history', () => {
   assert.equal(readRequest({ text: 'x', sessionId: 42 }, CONFIG).value.sessionId, '');
 });
 
+test('the wheel action picks the task, the extra rules and the tool budget', () => {
+  assert.equal(readRequest({ text: 'x' }, CONFIG).value.action, 'explain');
+  assert.equal(readRequest({ text: 'x', action: 'translate' }, CONFIG).value.action, 'translate');
+  assert.equal(readRequest({ text: 'x', action: 'rm -rf' }, CONFIG).value.action, 'explain');
+
+  const translated = buildUserMessage({ action: 'translate', text: 'Idempotent' }, CONFIG);
+  assert.match(translated, /【现在的任务】\n把这段翻译成中文/);
+  assert.match(buildUserMessage({ action: 'summarize', text: '一长段' }, CONFIG), /总结成能带走/);
+
+  assert.match(systemPrompt(false, 'translate'), /翻译/);
+  assert.doesNotMatch(systemPrompt(true, 'translate'), /read_file/);
+  assert.match(systemPrompt(true, 'critique'), /read_file/);
+  assert.match(systemPrompt(false, 'explain'), /```mermaid/);
+  assert.doesNotMatch(systemPrompt(false, 'translate'), /```mermaid/);
+});
+
 test('the prompt carries the selection, optional context and follow-up', () => {
   const prompt = buildUserMessage(
     {
