@@ -155,7 +155,9 @@ ln -sfn ~/.dsh/plugins/dsh-eli5 ~/.dsh/profiles/web/node_modules/dsh-eli5
       - /绝对路径/到/dsh-eli5        # 默认 root 是空的，只监听 profile 配置
 ```
 
-代价要清楚：reload 会 dispose 再重新 apply 这个插件，**正在进行的解释会中断、进程内缓存清空**；存到一半的语法错误不会把插件弄挂——这次 reload 失败，旧版本继续服务，改好再存就换过去。这个改动本身要重启一次才生效，之后就不用再重启了。
+代价要清楚：reload 会 dispose 再重新 apply 这个插件，**正在进行的解释会中断、进程内缓存清空**；存到一半的语法错误不会把插件弄挂——这次 reload 失败，旧版本继续服务，改好再存就换过去。
+
+**这段配置本身也不用重启**：profile 配置一直在 HMR 的监听范围里，存盘触发重组时就带上了新的 `root`（实测：加上 `root` 后不重启，改 `PROMPT_REVISION` 存盘，接口返回的版本号当场就变了）。默认 `ignored` 含 `**/node_modules`，所以 `root` 要指向真实源码目录，指到 `node_modules` 里的链接不会触发。
 
 重启会结束正在进行的会话（会话记录本身不丢，重开后还在）。
 
